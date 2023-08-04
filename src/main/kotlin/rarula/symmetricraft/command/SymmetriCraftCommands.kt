@@ -134,7 +134,7 @@ class SymmetriCraftCommands : CommandExecutor, TabExecutor {
                         }
 
                         if (found) {
-                            sender.sendMessage("" + ChatColor.GREEN + "Area '${name}' has been removed.")
+                            sender.sendMessage("" + ChatColor.GREEN + "The specified area '${name}' has been removed.")
                         } else {
                             sender.sendMessage("" + ChatColor.RED + "The specified area could not be found.")
                         }
