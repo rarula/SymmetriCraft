@@ -9,7 +9,7 @@ class SymmetricAreaRunnable(private val symmetricArea: SymmetricArea) : BukkitRu
             val location = symmetricArea.getLocation().clone()
 
             symmetricArea.getLocation().world.spawnParticle(
-                Particle.END_ROD, location.add(0.5, 0.5, 0.5).add(0.0, i.toDouble() / 2, 0.0), 1, 0.0, 0.0, 0.0, 0.0
+                Particle.END_ROD, location.add(0.0, i.toDouble() / 2, 0.0), 1, 0.0, 0.0, 0.0, 0.0
             )
         }
     }

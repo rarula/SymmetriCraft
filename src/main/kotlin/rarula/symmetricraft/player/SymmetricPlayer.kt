@@ -2,7 +2,8 @@ package rarula.symmetricraft.player
 
 import org.bukkit.entity.Player
 import rarula.symmetricraft.SymmetriCraft
-import java.util.*
+import java.util.UUID
+import kotlin.collections.HashMap
 
 class SymmetricPlayer(player: Player) {
     companion object {
@@ -15,6 +16,7 @@ class SymmetricPlayer(player: Player) {
         fun deleteSymmetricPlayer(player: Player) {
             val symmetricPlayer = playerMap[player.uniqueId]
             symmetricPlayer?.setDisplaying(false, DisplayMode.NONE)
+            symmetricPlayer?.stopRunnable()
 
             playerMap.remove(player.uniqueId)
         }
@@ -48,8 +50,6 @@ class SymmetricPlayer(player: Player) {
                 this.runnable = SymmetricPlayerRunnable(this)
                 this.runnable?.runTaskTimer(SymmetriCraft.getPlugin(), 0L, 5L)
             }
-        } else {
-            this.runnable?.cancel()
         }
         this.isDisplaying = isDisplaying
         this.displayMode = displayMode
@@ -57,5 +57,9 @@ class SymmetricPlayer(player: Player) {
 
     fun getDisplayMode(): DisplayMode {
         return displayMode
+    }
+
+    fun stopRunnable() {
+        runnable?.cancel()
     }
 }

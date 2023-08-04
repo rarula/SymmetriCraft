@@ -12,6 +12,7 @@ import rarula.symmetricraft.area.SymmetricArea
 import rarula.symmetricraft.player.DisplayMode
 import rarula.symmetricraft.player.SymmetricPlayer
 import rarula.symmetricraft.util.Direction
+import rarula.symmetricraft.util.DirectionType
 import rarula.symmetricraft.world.SymmetricWorld
 
 class SymmetriCraftCommands : CommandExecutor, TabExecutor {
@@ -24,154 +25,187 @@ class SymmetriCraftCommands : CommandExecutor, TabExecutor {
                     return false
                 }
 
-                when (args[0]) {
-                    "show" -> {
-                        if (args.size < 2) {
-                            return false
-                        }
-
-                        when (args[1]) {
-                            "center" -> {
-                                SymmetricPlayer.getSymmetricPlayer(sender)?.setDisplaying(true, DisplayMode.CENTER)
-                                return true
-                            }
-                            "corner" -> {
-                                SymmetricPlayer.getSymmetricPlayer(sender)?.setDisplaying(true, DisplayMode.CORNER)
-                                return true
-                            }
-                        }
+                return when (args[0]) {
+                    "show" -> show(sender, args)
+                    "hide" -> hide(sender)
+                    "add" -> add(sender, args)
+                    "remove" -> remove(sender, args)
+                    "list" -> list(sender)
+                    "help" -> help(sender)
+                    else -> {
+                        false
                     }
-                    "hide" -> {
-                        SymmetricPlayer.getSymmetricPlayer(sender)?.setDisplaying(false, DisplayMode.NONE)
-                        return true
-                    }
-                    "add" -> {
-                        if (args.size < 5) {
-                            return false
-                        }
+                }
+            }
+        }
+        return false
+    }
 
-                        val symmetricPlayer = SymmetricPlayer.getSymmetricPlayer(sender)
-                        if (symmetricPlayer !== null) {
-                            val name = args[4]
-                            val radius = args[3].toInt()
+    private fun show(sender: Player, args: Array<out String>): Boolean {
+        if (args.size < 2) return false
 
-                            val player = symmetricPlayer.getBukkitPlayer()
-                            val world = player.world
-                            val location = player.getTargetBlock(10)?.location
-                            val direction = Direction.getDirectionTypeFromYaw(player.location.yaw)
+        when (args[1]) {
+            "center" -> {
+                SymmetricPlayer.getSymmetricPlayer(sender)?.setDisplaying(true, DisplayMode.CENTER)
+                return true
+            }
+            "corner" -> {
+                SymmetricPlayer.getSymmetricPlayer(sender)?.setDisplaying(true, DisplayMode.CORNER)
+                return true
+            }
+        }
+        return false
+    }
 
-                            if (location !== null) {
-                                when (args[1]) {
-                                    "center" -> {
-                                        when (args[2]) {
-                                            "point" -> {
-                                                symmetricPlayer.setDisplaying(false, DisplayMode.NONE)
-                                                SymmetricWorld.getFromWorld(world).addArea(
-                                                    SymmetricArea(name, location, direction, radius, AreaAlignType.CENTER, AreaSymmetryType.POINT)
-                                                )
+    private fun hide(sender: Player): Boolean {
+        SymmetricPlayer.getSymmetricPlayer(sender)?.setDisplaying(false, DisplayMode.NONE)
+        return true
+    }
 
-                                                player.sendMessage("" + ChatColor.GREEN + "Added area '${name}'.")
+    private fun add(sender: Player, args: Array<out String>): Boolean {
+        if (args.size < 5) return false
 
-                                                return true
-                                            }
-                                            "line" -> {
-                                                symmetricPlayer.setDisplaying(false, DisplayMode.NONE)
-                                                SymmetricWorld.getFromWorld(world).addArea(
-                                                    SymmetricArea(name, location, direction, radius, AreaAlignType.CENTER, AreaSymmetryType.LINE)
-                                                )
+        val symmetricPlayer = SymmetricPlayer.getSymmetricPlayer(sender)
+        if (symmetricPlayer === null) return false
 
-                                                player.sendMessage("" + ChatColor.GREEN + "Added area '${name}'.")
+        val name = args[4]
+        val radius = args[3].toInt()
 
-                                                return true
-                                            }
-                                        }
-                                    }
-                                    "corner" -> {
-                                        when (args[2]) {
-                                            "point" -> {
-                                                symmetricPlayer.setDisplaying(false, DisplayMode.NONE)
-                                                SymmetricWorld.getFromWorld(world).addArea(
-                                                    SymmetricArea(name, location, direction, radius, AreaAlignType.CORNER, AreaSymmetryType.POINT)
-                                                )
+        val player = symmetricPlayer.getBukkitPlayer()
+        val world = player.world
+        val location = player.getTargetBlock(10)?.location
+        val direction = Direction.getDirectionTypeFromYaw(player.location.yaw)
+        if (location === null) return false
 
-                                                player.sendMessage("" + ChatColor.GREEN + "Added area '${name}'.")
+        when (args[1]) {
+            "center" -> {
+                when (args[2]) {
+                    "point" -> {
+                        SymmetricWorld.getFromWorld(world).addArea(
+                            SymmetricArea(name, location.add(0.5, 0.5, 0.5), direction, radius, AreaAlignType.CENTER, AreaSymmetryType.POINT)
+                        )
 
-                                                return true
-                                            }
-                                            "line" -> {
-                                                symmetricPlayer.setDisplaying(false, DisplayMode.NONE)
-                                                SymmetricWorld.getFromWorld(world).addArea(
-                                                    SymmetricArea(name, location, direction, radius, AreaAlignType.CORNER, AreaSymmetryType.LINE)
-                                                )
-
-                                                player.sendMessage("" + ChatColor.GREEN + "Added area '${name}'.")
-
-                                                return true
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    "remove" -> {
-                        if (args.size < 2) {
-                            return false
-                        }
-
-                        val name = args[1]
-
-                        val symmetricWorld = SymmetricWorld.getFromWorld(sender.world)
-                        val areaList = symmetricWorld.getAllArea()
-
-                        var found = false
-                        for (area in areaList) {
-                            if (name == area.getName()) {
-                                symmetricWorld.removeArea(name)
-                                found = true
-                                break
-                            }
-                        }
-
-                        if (found) {
-                            sender.sendMessage("" + ChatColor.GREEN + "The specified area '${name}' has been removed.")
-                        } else {
-                            sender.sendMessage("" + ChatColor.RED + "The specified area could not be found.")
-                        }
+                        symmetricPlayer.setDisplaying(false, DisplayMode.NONE)
+                        player.sendMessage("" + ChatColor.GREEN + "Added area '${name}'.")
 
                         return true
                     }
-                    "list" -> {
-                        val symmetricPlayer = SymmetricPlayer.getSymmetricPlayer(sender)
-                        if (symmetricPlayer !== null) {
-                            val player = symmetricPlayer.getBukkitPlayer()
-                            val areaList = SymmetricWorld.getFromWorld(player.world).getAllArea()
+                    "line" -> {
+                        SymmetricWorld.getFromWorld(world).addArea(
+                            SymmetricArea(name, location.add(0.5, 0.5, 0.5), direction, radius, AreaAlignType.CENTER, AreaSymmetryType.LINE)
+                        )
 
-                            sender.sendMessage("" + ChatColor.GREEN + "-------------------- List --------------------")
-
-                            for (area in areaList) {
-                                sender.sendMessage(area.getName())
-                            }
-
-                            sender.sendMessage("" + ChatColor.GREEN + "----------------------------------------------")
-                        }
+                        symmetricPlayer.setDisplaying(false, DisplayMode.NONE)
+                        player.sendMessage("" + ChatColor.GREEN + "Added area '${name}'.")
 
                         return true
                     }
-                    "help" -> {
-                        sender.sendMessage("" + ChatColor.YELLOW + "-------------------- Help --------------------")
-                        sender.sendMessage("" +                    "/sc show (center|corner)")
-                        sender.sendMessage("" +                    "/sc hide")
-                        sender.sendMessage("" +                    "/sc add (center|corner) (point|line) <radius> <name>")
-                        sender.sendMessage("" +                    "/sc remove <name>")
-                        sender.sendMessage("" +                    "/sc list")
-                        sender.sendMessage("" + ChatColor.YELLOW + "----------------------------------------------")
+                }
+            }
+            "corner" -> {
+                when (direction) {
+                    DirectionType.SOUTH -> {
+                        location.add(0.5, 0.5, 1.0)
+                    }
+                    DirectionType.SOUTH_EAST -> {
+                        location.add(1.0, 0.5, 1.0)
+                    }
+                    DirectionType.EAST -> {
+                        location.add(1.0, 0.5, 0.5)
+                    }
+                    DirectionType.NORTH_EAST -> {
+                        location.add(1.0, 0.5, 0.0)
+                    }
+                    DirectionType.NORTH -> {
+                        location.add(0.5, 0.5, 0.0)
+                    }
+                    DirectionType.NORTH_WEST -> {
+                        location.add(0.0, 0.5, 0.0)
+                    }
+                    DirectionType.WEST -> {
+                        location.add(0.0, 0.5, 0.5)
+                    }
+                    DirectionType.SOUTH_WEST -> {
+                        location.add(0.0, 0.5, 1.0)
+                    }
+                }
+
+                when (args[2]) {
+                    "point" -> {
+                        SymmetricWorld.getFromWorld(world).addArea(
+                            SymmetricArea(name, location, direction, radius, AreaAlignType.CORNER, AreaSymmetryType.POINT)
+                        )
+
+                        symmetricPlayer.setDisplaying(false, DisplayMode.NONE)
+                        player.sendMessage("" + ChatColor.GREEN + "Added area '${name}'.")
+
+                        return true
+                    }
+                    "line" -> {
+                        SymmetricWorld.getFromWorld(world).addArea(
+                            SymmetricArea(name, location, direction, radius, AreaAlignType.CORNER, AreaSymmetryType.LINE)
+                        )
+
+                        symmetricPlayer.setDisplaying(false, DisplayMode.NONE)
+                        player.sendMessage("" + ChatColor.GREEN + "Added area '${name}'.")
+
                         return true
                     }
                 }
             }
         }
         return false
+    }
+
+    private fun remove(sender: Player, args: Array<out String>): Boolean {
+        if (args.size < 2) return false
+
+        val symmetricWorld = SymmetricWorld.getFromWorld(sender.world)
+        val areaList = symmetricWorld.getAllArea()
+
+        val name = args[1]
+        var found = false
+
+        for (area in areaList) {
+            if (name == area.getName()) {
+                symmetricWorld.removeArea(name)
+                found = true
+
+                break
+            }
+        }
+
+        if (found) {
+            sender.sendMessage("" + ChatColor.GREEN + "The specified area '${name}' has been removed.")
+        } else {
+            sender.sendMessage("" + ChatColor.RED + "The specified area could not be found.")
+        }
+
+        return true
+    }
+
+    private fun list(sender: Player): Boolean {
+        val areaList = SymmetricWorld.getFromWorld(sender.world).getAllArea()
+
+        sender.sendMessage("" + ChatColor.GREEN + "-------------------- List --------------------")
+        for (area in areaList) {
+            sender.sendMessage("- " + area.getName())
+        }
+        sender.sendMessage("" + ChatColor.GREEN + "----------------------------------------------")
+
+        return true
+    }
+
+    private fun help(sender: Player): Boolean {
+        sender.sendMessage("" + ChatColor.YELLOW + "-------------------- Help --------------------")
+        sender.sendMessage("" +                    "/sc show (center|corner)")
+        sender.sendMessage("" +                    "/sc hide")
+        sender.sendMessage("" +                    "/sc add (center|corner) (point|line) <radius> <name>")
+        sender.sendMessage("" +                    "/sc remove <name>")
+        sender.sendMessage("" +                    "/sc list")
+        sender.sendMessage("" + ChatColor.YELLOW + "----------------------------------------------")
+
+        return true
     }
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>?): MutableList<String>? {
