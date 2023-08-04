@@ -2,7 +2,7 @@ package rarula.symmetricraft.world
 
 import org.bukkit.World
 import rarula.symmetricraft.area.SymmetricArea
-import java.util.UUID
+import java.util.*
 
 class SymmetricWorld(world: World) {
     companion object {

@@ -2,8 +2,7 @@ package rarula.symmetricraft.player
 
 import org.bukkit.entity.Player
 import rarula.symmetricraft.SymmetriCraft
-import java.util.UUID
-import kotlin.collections.HashMap
+import java.util.*
 
 class SymmetricPlayer(player: Player) {
     companion object {
