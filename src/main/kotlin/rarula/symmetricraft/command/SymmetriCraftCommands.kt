@@ -129,7 +129,7 @@ class SymmetriCraftCommands : CommandExecutor, TabExecutor {
                             if (name == area.getName()) {
                                 symmetricWorld.removeArea(name)
                                 found = true
-                                break;
+                                break
                             }
                         }
 
