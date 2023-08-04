@@ -1,0 +1,12 @@
+name: SymmetriCraft
+version: '${project.version}'
+main: rarula.symmetricraft.SymmetriCraft
+api-version: '1.16'
+
+commands:
+  symmetricraft:
+    aliases:
+      - sc
+    description: SymmetriCraft commands
+    permission: symmetricraft.admin
+    usage: Type /sc help
